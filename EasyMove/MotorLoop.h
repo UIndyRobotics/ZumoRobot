@@ -10,6 +10,7 @@
 double Setpoint;
 double Inputr, Outputr;
 double Inputl, Outputl;
+// PID parameters
 PID myPIDr(&Inputr, &Outputr, &Setpoint,2.0,7,0.01,P_ON_M, DIRECT);
 PID myPIDl(&Inputl, &Outputl, &Setpoint,2.0,7,0.01,P_ON_M, DIRECT);
 

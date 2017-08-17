@@ -8,8 +8,7 @@
 
 #define MAX_INS 100
 #define IN_TO_TICKS 201
-#define DEG_TO_TICKS 7.23
-
+#define DEG_TO_TICKS 7.20
 struct cmd_t{
   uint8_t cmd;
   float amt;
@@ -38,7 +37,7 @@ class Program{
     running = false;
     cur_step = 0;
     lastA = 0;
-    motors.setSpeed(35);
+    motors.setSpeed(75);
   }
 
   void update(){
@@ -52,7 +51,7 @@ class Program{
     }
     if((uint8_t)(millis() - lastDisplayTime) > 100){
         lcd.clear();
-        lcd.print("Step ");
+        lcd.print("St:");
         lcd.print(cur_step);
         lcd.print("/");
         lcd.print(num_instructions);
@@ -108,14 +107,14 @@ class Program{
   void right(float deg){
     if(num_instructions >= MAX_INS)return;
     instructions[num_instructions].cmd = 1;
-    instructions[num_instructions].amt = deg;
+    instructions[num_instructions].amt = -deg;
     num_instructions++;
   }
 
   void left(float deg){
     if(num_instructions >= MAX_INS)return;
     instructions[num_instructions].cmd = 1;
-    instructions[num_instructions].amt = -deg;
+    instructions[num_instructions].amt = deg;
     num_instructions++;
   }
 };
