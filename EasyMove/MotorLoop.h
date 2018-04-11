@@ -3,7 +3,7 @@
 
 #include <Wire.h>
 #include <Zumo32U4.h>
-#include <PID_v1.h>
+#include "PID_v1pgt.h"
 
 #define MOVE_TIME 2.0
 
@@ -61,10 +61,15 @@ class MotorLoop{
   }
 
   update(){
-    
+      
 
       int16_t cur_right = encoders.getCountsRight();
       int16_t cur_left = encoders.getCountsLeft();
+
+      Serial.print(cur_right);
+      Serial.print(",");
+      Serial.println(cur_left);
+      
       //if(start_time + MOVE_TIME * 1000 > millis()){ // Moving!
         //float desired_curr = (float)(desired_right - start_right) * (float)(millis() - start_time)/MOVE_TIME/1000.0 + (float)start_right;
         Inputr = (float)(cur_right - desired_right);
