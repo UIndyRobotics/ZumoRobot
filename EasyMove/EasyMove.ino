@@ -21,7 +21,7 @@ Program p;
 
 void setup()
 {
- p.forward(10);
+ p.forwardToLine(20);
  p.left(90);
  p.left(90);
  p.forward(10);

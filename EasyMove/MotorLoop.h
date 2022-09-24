@@ -17,10 +17,14 @@ double Inputl, Outputl;
 PID myPIDr(&Inputr, &Outputr, &Setpoint,2.0,7,0.01,P_ON_M, DIRECT);
 PID myPIDl(&Inputl, &Outputl, &Setpoint,2.0,7,0.01,P_ON_M, DIRECT);
 
+#define NUM_SENSORS 5
+uint16_t lineSensorValues[NUM_SENSORS];
+
 class MotorLoop{
   Zumo32U4Encoders encoders;
   Zumo32U4Motors motors;
   Zumo32U4LCD lcd;
+  Zumo32U4LineSensors lineSensors;
   
   long desired_right;
   long desired_left;
@@ -32,7 +36,9 @@ class MotorLoop{
   unsigned long last_motor_measure_time;
   int last_left;
   int last_right;
- 
+
+  short line_stop;
+  uint32_t avg_line;
 
   public:
   
@@ -47,6 +53,12 @@ class MotorLoop{
     myPIDl.SetOutputLimits(-400,400);
     myPIDl.SetMode(AUTOMATIC);
     last_motor_measure_time = millis();
+
+    lineSensors.initFiveSensors();
+    lineSensors.emittersOn();
+    line_stop = false;
+    avg_line = 0;
+    
   }
 
   void setSpeed(int d_speed){ // on a 0-100 scale
@@ -57,11 +69,20 @@ class MotorLoop{
   void gotoPos(long rpos, long lpos){
     desired_right = rpos;
     desired_left = lpos;
-    //start_time = millis();
-    //start_right = encoders.getCountsRight();
+
     last_motor_measure_time = millis();
     last_right = 0;
     last_left = 0;
+    line_stop = false;
+  }
+
+void gotoLine(long rpos, long lpos){
+    desired_right = rpos;
+    desired_left = lpos;
+    last_motor_measure_time = millis();
+    last_right = 0;
+    last_left = 0;
+    line_stop = true;
   }
 
   bool finished(){
@@ -114,6 +135,17 @@ class MotorLoop{
       }
       
       last_motor_measure_time = millis();
+
+      lineSensors.read(lineSensorValues, true);
+      if(avg_line == 0){
+        avg_line = lineSensorValues[2];
+      }else{
+        avg_line = (avg_line * 50 + (uint32_t)lineSensorValues[2] * 50) / 100;
+      }
+      Serial.print(lineSensorValues[2]);
+      Serial.print("  ");
+      Serial.print(avg_line);
+      Serial.println("");
     
       delay(5);
 

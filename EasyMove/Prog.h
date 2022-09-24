@@ -79,9 +79,10 @@ class Program{
         }else if(instructions[cur_step].cmd == 1){ // turn!
           motors.gotoPos(encoders.getCountsRight() + int(instructions[cur_step].amt * DEG_TO_TICKS),
                          encoders.getCountsLeft() - int(instructions[cur_step].amt * DEG_TO_TICKS));
-          
+        }else if(instructions[cur_step].cmd == 2){ // Detect line
+          motors.gotoLine(encoders.getCountsRight() + int(instructions[cur_step].amt * IN_TO_TICKS),
+                         encoders.getCountsLeft() + int(instructions[cur_step].amt * IN_TO_TICKS));
         }
-
         cur_step++;
       }
       
@@ -117,6 +118,12 @@ class Program{
     instructions[num_instructions].amt = deg;
     num_instructions++;
   }
+
+    void forwardToLine(float max_distance){
+    if(num_instructions >= MAX_INS)return;
+    instructions[num_instructions].cmd = 2;
+    instructions[num_instructions].amt = max_distance;
+    num_instructions++;
+  }
 };
 #endif 
-
