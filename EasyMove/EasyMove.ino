@@ -21,15 +21,13 @@ Program p;
 
 void setup()
 {
-  p.forward(30);
-  p.right(90);
-  p.forward(27);
-  p.right(90);
-  p.forward(30);
-  p.right(90);
-  p.forward(30);
-  p.right(90);
-  
+ p.forward(10);
+ p.left(90);
+ p.left(90);
+ p.forward(10);
+ p.left(90);
+ p.left(90);
+ 
 }
 
 void loop()

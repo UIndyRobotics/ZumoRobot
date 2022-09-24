@@ -7,6 +7,9 @@
 
 #define MOVE_TIME 2.0
 
+#define ACCEL 100 
+// Motor increase per second
+
 double Setpoint;
 double Inputr, Outputr;
 double Inputl, Outputl;
@@ -21,11 +24,14 @@ class MotorLoop{
   
   long desired_right;
   long desired_left;
-  long start_right;
-  long start_left;
-  long start_time;
-  int desired_speed;
-  long lastDisplayTime;
+  //long start_right;
+  //long start_left;
+  //long start_time;
+  //int desired_speed;
+  //long lastDisplayTime;
+  unsigned long last_motor_measure_time;
+  int last_left;
+  int last_right;
  
 
   public:
@@ -40,7 +46,7 @@ class MotorLoop{
     myPIDr.SetMode(AUTOMATIC);
     myPIDl.SetOutputLimits(-400,400);
     myPIDl.SetMode(AUTOMATIC);
-    start_time = millis();
+    last_motor_measure_time = millis();
   }
 
   void setSpeed(int d_speed){ // on a 0-100 scale
@@ -51,8 +57,11 @@ class MotorLoop{
   void gotoPos(long rpos, long lpos){
     desired_right = rpos;
     desired_left = lpos;
-    start_time = millis();
-    start_right = encoders.getCountsRight();
+    //start_time = millis();
+    //start_right = encoders.getCountsRight();
+    last_motor_measure_time = millis();
+    last_right = 0;
+    last_left = 0;
   }
 
   bool finished(){
@@ -62,31 +71,51 @@ class MotorLoop{
 
   update(){
       
-
       int16_t cur_right = encoders.getCountsRight();
       int16_t cur_left = encoders.getCountsLeft();
 
-      Serial.print(cur_right);
+      /*Serial.print(cur_right);
       Serial.print(",");
       Serial.println(cur_left);
+      */
       
-      //if(start_time + MOVE_TIME * 1000 > millis()){ // Moving!
-        //float desired_curr = (float)(desired_right - start_right) * (float)(millis() - start_time)/MOVE_TIME/1000.0 + (float)start_right;
-        Inputr = (float)(cur_right - desired_right);
-        Inputl = (float)(cur_left - desired_left);
-        myPIDr.Compute();
-        myPIDl.Compute();
-        motors.setRightSpeed((int)Outputr);
+      Inputr = (float)(cur_right - desired_right);
+      Inputl = (float)(cur_left - desired_left);
+      myPIDr.Compute();
+      myPIDl.Compute();
+      int dt = millis() - last_motor_measure_time;
+      unsigned long max_delta = ACCEL * dt / 1000; // millis is in ms but ACCEL is per second
+      
+      
+      int leftDelta = ((int)Outputl - last_left);
+      int rightDelta = ((int)Outputr - last_right);
+      if((int)Outputl - last_left > 1 && (int)Outputl > 0){
+        //Serial.print("Left limit");
+        motors.setLeftSpeed(last_left + 1);
+        last_left = last_left + 1;
+      }else if((int)Outputl - last_left < -1 && (int)Outputl < 0){
+        //Serial.print("Left limit");
+        motors.setLeftSpeed(last_left - 1);
+        last_left = last_left - 1;
+      }else{
         motors.setLeftSpeed((int)Outputl);
-      //}
-      /*
-      if((uint8_t)(millis() - lastDisplayTime) > 100){
-        lcd.clear();
-        lcd.print(cur_right);
-        lcd.gotoXY(0,1);
-        lcd.print((float)(millis() - start_time)/MOVE_TIME/1000.0);
-        lastDisplayTime = millis();
-      }*/
+        last_left = (int)Outputl;
+      }
+      
+      if((int)Outputr - last_right > 1 && (int)Outputr > 0){
+        motors.setRightSpeed(last_right + 1);
+        last_right = last_right + 1;
+      }else if((int)Outputr - last_right < -1 && (int)Outputr < 0){
+        motors.setRightSpeed(last_right - 1);
+        last_right = last_right - 1;
+      }else{
+        motors.setRightSpeed((int)Outputr);
+        last_right = (int)Outputr;
+      }
+      
+      last_motor_measure_time = millis();
+    
+      delay(5);
 
     }
     
@@ -94,4 +123,3 @@ class MotorLoop{
 };
 
 #endif
-
